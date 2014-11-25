@@ -387,7 +387,7 @@ module DataShift
             next unless(value_str)
 
             optiontype_vlist_map[option_type] = []
-
+           
             # Now get the value(s) for the option e.g red,blue,green for OptType 'colour'
             optiontype_vlist_map[option_type] = value_str.split(',')
           end
@@ -410,7 +410,7 @@ module DataShift
 
             ovname.strip!
 
-            ov = @@option_value_klass.find_or_create_by_name_and_option_type_id(ovname, lead_option_type.id, :presentation => ovname.humanize)
+            ov = @@option_value_klass.where(name: ovname, option_type_id: lead_option_type.id, presentation: ovname.humanize).first_or_create
 
             ov_list << ov if ov
 
@@ -420,7 +420,7 @@ module DataShift
 
                 for_composite.strip!
 
-                ov = @@option_value_klass.find_or_create_by_name_and_option_type_id(for_composite, ot.id, :presentation => for_composite.humanize)
+            		ov = @@option_value_klass.where(name: for_composite, option_type_id: ot.id, presentation: for_composite.humanize).first_or_create
 
                 ov_list << ov if(ov)
               end
@@ -512,7 +512,7 @@ module DataShift
 
           parent_name = name_list.shift
 
-          parent_taxonomy = @@taxonomy_klass.find_or_create_by_name(parent_name)
+          parent_taxonomy = @@taxonomy_klass.where(name: parent_name).first_or_create
 
           raise DataShift::DataProcessingError.new("Could not find or create Taxonomy #{parent_name}") unless parent_taxonomy
 
@@ -522,7 +522,7 @@ module DataShift
           taxons = name_list.collect do |name|
 
             begin
-              taxon = @@taxon_klass.find_or_create_by_name_and_parent_id_and_taxonomy_id(name, parent && parent.id, parent_taxonomy.id)
+              taxon = @@taxon_klass.where(name: name, parent_id: parent && parent.id, taxonomy_id: parent_taxonomy.id).first_or_create
 
               unless(taxon)
                 puts "Not found or created so now what ?"
