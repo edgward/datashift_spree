@@ -39,8 +39,8 @@ module DataShift
         logger.info "Product load from File [#{file_name}]"
 
         options = opts.dup
-
-        #puts "Product Loader -  Load Options", options.inspect
+			
+        puts "Product Loader -  Load Options", options.inspect
 
         # In >= 1.1.0 Image moved to master Variant from Product so no association called Images on Product anymore
 
@@ -103,16 +103,20 @@ module DataShift
               name = row[name_index]
 
               if options["match_by"]
-                name_index = @headers.find_index(options["match_by"])
-                name = row[name_index]
-                condition_hash = {name: row[name_index]}
+								# searching for existing product by slug rather than name
+              	slug_index = @headers.find_index("slug")
+              	slug = row[slug_index]
+                condition_hash = {slug: row[slug_index]}
                 object = find_or_new(@load_object_class, condition_hash)
-                reset(object)
+                # reset method also resets counts, lets avoid that by just resetting the load object
+								# for reference, reset method is in datashift gem's loader_base.rb
+                # reset(object)
+								@load_object = object || new_load_object
               end
 
               puts ""
               action = @load_object.persisted? ? 'Updating' : 'Creating'
-              puts "#{action} row #{i+2}: #{name}"
+              puts "#{action} row #{i+1}: #{name}"
 
               @reporter.processed_object_count += 1
 
@@ -164,12 +168,16 @@ module DataShift
 
             end
 
-            raise ActiveRecord::Rollback if(options[:dummy]) # Don't actually create/upload to DB if we are doing dummy run
+						if(options[:dummy])
+	            puts "\nCSV loading stage complete - Dummy run so Rolling Back."
+  	          raise ActiveRecord::Rollback # Don't actually create/upload to DB if we are doing dummy run
+    	      end
+
           end
         rescue => e
           puts "CAUGHT ", e.backtrace, e.inspect
           if e.is_a?(ActiveRecord::Rollback) && options[:dummy]
-            puts "CSV loading stage complete - Dummy run so Rolling Back."
+            puts "\nCSV loading stage complete - Dummy run so Rolling Back."
           else
             raise e
           end
@@ -312,7 +320,10 @@ module DataShift
       end
 
       def find_or_new( klass, condition_hash = {} )
-        @records = klass.find(:all, :conditions => condition_hash)
+
+				# Using slug as product names may be repeated
+        #@records = klass.find(:all, :conditions => condition_hash)
+        @records = klass.where(slug: condition_hash[:slug])
         return @records.any? ? @records.first : klass.new
       end
 
