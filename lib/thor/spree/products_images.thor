@@ -70,6 +70,8 @@ module DatashiftSpree
     desc "attach_images", "Populate Products with images from Excel/CSV\nProvide column SKU or Name\nColumn containing full path to image can be named 'attachment', 'images' or 'path' "
     # :dummy => dummy run without actual saving to DB
     method_option :input, :aliases => '-i', :required => true, :desc => "The 2 column import file (.xls or .csv)"
+    method_option :verbose, :aliases => '-v', :type => :boolean, :desc => "Verbose logging"
+    method_option :dummy, :aliases => '-d', :type => :boolean, :desc => "Dummy run, do not actually save Image or Product"
 
     def attach_images()
 
@@ -77,8 +79,10 @@ module DatashiftSpree
 
       require 'image_loader'
 
+			puts "DEBUG OUTPUT: Calling ImageLoader with #{options}"
       loader = DataShift::SpreeHelper::ImageLoader.new(nil, options)
 
+			puts "DEBUG OUTPUT: Performing load"
       loader.perform_load( options[:input], options )
     end
 

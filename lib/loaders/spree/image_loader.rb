@@ -5,6 +5,8 @@
 #
 require 'loader_base'
 #require 'paperclip/attachment_loader'
+require 'spree_base_loader'
+require 'spree_helper'
 
 module DataShift
 
@@ -46,6 +48,8 @@ module DataShift
       def perform_load( file_name, opts = {} )
         options = opts.dup
         
+				puts "DEBUG INFO: Performing load with #{options} on filename #{file_name}"
+
         # force inclusion means add headers to operator list even not present on Image
         options[:include_all] = true
 
@@ -65,6 +69,8 @@ module DataShift
       # Value string which may contain multiple values for a collection (has_many) association.
       #
       def process(method_detail, value)  
+
+				 puts "DEBUG INFO: Processing image load with method detail: #{method_detail} and value: #{value}"
         
         raise ImageLoadError.new("Cannot process #{value} NO details found to assign to") unless(method_detail)
 

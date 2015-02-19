@@ -48,6 +48,7 @@ module DataShift
     def perform_load( file_name, opts = {} )
       
       logger.info "Starting load from file [#{file_name}]"
+      puts "DEBUG INFO: Starting load from file [#{file_name}] in Spree Base Loader method"
       
       @options = opts.dup
 
@@ -69,6 +70,7 @@ module DataShift
     def add_images( record )
 
       #save_if_new
+       puts("DEBUG INFO: Calling add_images")
 
       # different versions have moved images around from Prod to Variant
       owner = DataShift::SpreeHelper::get_image_owner(record)
@@ -76,6 +78,7 @@ module DataShift
       get_each_assoc.each do |image|
 
         logger.debug("Processing IMAGE from #{image.inspect}")
+        puts("DEBUG INFO: Processing IMAGE from #{image.inspect}")
              
         #TODO - make this Delimiters::attributes_start_delim and support {alt=> 'blah, :position => 2 etc}
 

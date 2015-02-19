@@ -101,11 +101,18 @@ module DataShift
 
               name_index = @headers.find_index("Name")
               name = row[name_index]
+							puts "DEBUG INFO: match_by = #{options['match_by']}"
 
               if options["match_by"]
+
+								puts "DEBUG INFO: Option match_by specified"
+
 								# searching for existing product by slug rather than name
               	slug_index = @headers.find_index("slug")
               	slug = row[slug_index]
+								if slug.include? "'"
+            			puts "WARNING: Slug #{slug} contains a special character which will cause errors with matching existing products. Please remove it"
+								end
                 condition_hash = {slug: row[slug_index]}
                 object = find_or_new(@load_object_class, condition_hash)
                 # reset method also resets counts, lets avoid that by just resetting the load object
@@ -369,6 +376,7 @@ module DataShift
           option_types = per_variant.split(Delimiters::multi_facet_delim)    # => [mime_type:jpeg, print_type:black_white]
 
           logger.info "add_options_variants #{option_types.inspect}"
+          puts "add_options_variants #{option_types.inspect}"
            
           optiontype_vlist_map = {}
 
@@ -446,17 +454,20 @@ module DataShift
 
               # This one line seems to works for 1.1.0 - 3.2 but not 1.0.0 - 3.1 ??
 							if(SpreeHelper::version.to_f >= 1.1)
+              	puts "DEBUG INFO: Spree helper version is >= 1.1 so running 1st variant create line" if(verbose)
 							  variant = @load_object.variants.create( :sku => "#{@load_object.sku}_#{i}", :price => @load_object.price, :weight => @load_object.weight, :height => @load_object.height, :width => @load_object.width, :depth => @load_object.depth)
 							else
+              	puts "DEBUG INFO: Spree helper version is < 1.1 so running 2nd variant create line" if(verbose)
 							  variant = @@variant_klass.create( :product => @load_object, :sku => "#{@load_object.sku}_#{i}", :price => @load_object.price)
 							end
 
+              	puts "DEBUG INFO: Variant #{variant} created" if(verbose)
               variant.option_values << ov_list if(variant)
             end
           end
 
           @load_object.reload unless @load_object.new_record?
-          #puts "DEBUG Load Object now has Variants : #{@load_object.variants.inspect}" if(verbose)
+          puts "DEBUG Load Object now has Variants : #{@load_object.variants.inspect}" if(verbose)
         end
 
       end # each Variant
